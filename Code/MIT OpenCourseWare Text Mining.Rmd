@@ -1,0 +1,1861 @@
+---
+title: "MIT OpenCourseWare Text Mining"
+author: Gabriel Mantini 
+output: html_notebook
+---
+Course Acronyms:
+DAA: Design and Analysis of Algorithms
+MICRO: Principles of Microeconomics
+ITA: Introduction to Algorithms
+DATA: Introduction to Computational Thinking and Data Science
+CSPY: Introduction to Computer Science Programming in Python
+LIN: Linear Algebra
+MACRO: Intermediate Macroeconomics
+GAME: Economic Applications of Game Theory
+ML: Introduction to Machine Learning
+OPTIM: Optimization Methods in Business Analytics
+
+Load packages 
+```{r}
+library(tidyverse)
+library(tidytext)
+library(pdftools) #reads pdf documents
+library(tm) #text mining analysis
+library(wordcloud)
+library(RColorBrewer)
+library(topicmodels)
+library(qpdf) #merging pdfs
+library(textmineR) #Functions for Text Mining and Topic Modeling
+library(gridExtra)
+```
+
+```{r}
+citation(package = "tidyverse")
+citation(package = "tidytext")
+citation(package = "pdftools")
+citation(package = "tm")
+citation(package = "wordcloud")
+citation(package = "RColorBrewer")
+citation(package = "topicmodels")
+citation(package = "qpdf")
+citation(package = "textmineR")
+```
+
+
+# Preliminary Analysis
+ 
+## Attempting to merge all lectures in to their respective courses
+
+```{r}
+normalizePath("Lecture_Notes")
+```
+
+```{r}
+### Lecture Transcripts
+
+pdf_combine(input = c("Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\1.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\2.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\3.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\4.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\5.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\6.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\7.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\8.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\9.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\10.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\11.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\12.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\13.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\14.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\15.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\16.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\17.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\18.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\19.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\20.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\21.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\22.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\23.pdf",
+                      "Lecture_Transcripts\\Design_and_Analysis_of_Algorithms\\24.pdf"), output = "DAA.pdf")
+
+pdf_combine(input = c("Lecture_Transcripts\\Principles_of_Microeconomics\\1.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\2.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\3.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\4.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\5.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\6.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\7.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\8.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\9.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\10.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\11.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\12.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\13.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\14.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\15.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\16.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\17.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\18.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\19.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\20.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\21.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\22.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\23.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\24.pdf",
+                      "Lecture_Transcripts\\Principles_of_Microeconomics\\25.pdf"), output = "MICRO.pdf")
+
+pdf_combine(input = c("Lecture_Transcripts\\Introduction_to_Algorithms\\1.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\2.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\2B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\3.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\4.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\4B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\5.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\6.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\7.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\7B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\8.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\9.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\9B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\10.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\11.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\11B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\12.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\13.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\13B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\14.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\14B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\15.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\16.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\16B.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\17.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\18.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\19.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\20.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Algorithms\\21.pdf"), output = "ITA.pdf")
+
+pdf_combine(input = c("Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\1.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\2.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\3.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\4.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\5.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\6.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\7.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\8.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\9.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\10.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\11.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\12.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\13.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\14.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science\\15.pdf"), output = "DATA.pdf")
+
+pdf_combine(input = c("Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\1.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\2.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\3.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\4.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\5.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\6.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\7.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\8.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\9.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\10.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\11.pdf",
+                      "Lecture_Transcripts\\Introduction_to_Computer_Science_Programming_in_Python\\12.pdf"), output = "CSPY.pdf")
+
+pdf_combine(input = c("Lecture_Transcripts\\Linear_Algebra\\1.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\2.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\3.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\4.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\5.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\6.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\7.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\8.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\9.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\10.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\11.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\12.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\13.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\14.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\15.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\16.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\17.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\18.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\19.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\20.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\21.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\22.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\23.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\24.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\24B.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\25.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\26.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\27.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\28.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\29.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\30.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\31.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\32.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\33.pdf",
+                      "Lecture_Transcripts\\Linear_Algebra\\34.pdf"), output = "LIN.pdf")
+
+
+### Lecture Notes
+
+pdf_combine(input = c("Lecture_Notes\\Intermediate_Macroeconomics\\1.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\3.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\4.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\5.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\7.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\8.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\11.pdf",
+                      "Lecture_Notes\\Intermediate_Macroeconomics\\13.pdf"), output = "MACRO.pdf")
+
+pdf_combine(input = c("Lecture_Notes\\Economic_Applications_of_Game_Theory\\1.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\2.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\3.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\4.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\5.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\6.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\7.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\8.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\9.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\10.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\11.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\12.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\13.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\14.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\15.pdf",
+                      "Lecture_Notes\\Economic_Applications_of_Game_Theory\\16.pdf"), output = "GAME.pdf")
+
+pdf_combine(input = c("Lecture_Notes\\Introduction_to_Machine Learning\\1.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\2.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\3.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\4.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\5.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\6.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\7.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\8.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\9.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\10.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\11.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\12.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\13.pdf",
+                      "Lecture_Notes\\Introduction_to_Machine Learning\\14.pdf"), output = "ML.pdf")
+
+pdf_combine(input = c("Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\1.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\2.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\3.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\4.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\5.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\6.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\7.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\8.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\9.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\10.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\11.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\12.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\13.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\14.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\15.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\16.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\17.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\18.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\19.pdf",
+                      "Lecture_Notes\\Optimization_Methods_in_Business_Analytics\\20.pdf"), output = "OPTIM.pdf")
+```
+
+## Loading in course descriptions MIT
+
+- Courses that had `&` or `/` were replaced with `and`
+- `:` were removed completely
+- `_` put between each word in course name
+- '-' removed completely
+
+```{r}
+Linear_Algebra.desc <- "Basic subject on matrix theory and linear algebra, emphasizing topics useful in other disciplines, including systems of equations, vector spaces, determinants, eigenvalues, singular value decomposition, and positive definite matrices. Applications to least-squares approximations, stability of differential equations, networks, Fourier transforms, and Markov processes. Uses linear algebra software. Compared with 18.700, more emphasis on matrix algorithms and many applications."
+
+Introduction_to_Computer_Science_Programming_in_Python.desc <- "Introduction to computer science and programming for students with little or no programming experience. Students develop skills to program and use computational techniques to solve problems. Topics include the notion of computation, Python, simple algorithms and data structures, testing and debugging, and algorithmic complexity. Combination of 6.0001 and 6.0002 or 16.0002[J] counts as REST subject. Final given in the seventh week of the term."
+
+Introduction_to_Algorithms.desc <- "Introduction to mathematical modeling of computational problems, as well as common algorithms, algorithmic paradigms, and data structures used to solve these problems. Emphasizes the relationship between algorithms and programming, and introduces basic performance measures and analysis techniques for these problems. Enrollment may be limited."
+
+Mathematics_for_Computer_Science.desc <- "Elementary discrete mathematics for science and engineering, with a focus on mathematical tools and proof techniques useful in computer science. Topics include logical notation, sets, relations, elementary graph theory, state machines and invariants, induction and proofs by contradiction, recurrences, asymptotic notation, elementary analysis of algorithms, elementary number theory and cryptography, permutations and combinations, counting tools, and discrete probability."
+
+Design_and_Analysis_of_Algorithms.desc <- "Techniques for the design and analysis of efficient algorithms, emphasizing methods useful in practice. Topics include sorting; search trees, heaps, and hashing; divide-and-conquer; dynamic programming; greedy algorithms; amortized analysis; graph algorithms; and shortest paths. Advanced topics may include network flow; computational geometry; number-theoretic algorithms; polynomial and matrix calculations; caching; and parallel computing."
+
+Fundamentals_of_Programming.desc <- "Introduces fundamental concepts of programming. Designed to develop skills in applying basic methods from programming languages to abstract problems. Topics include programming and Python basics, computational concepts, software engineering, algorithmic techniques, data types, and recursion.  Lab component consists of software design, construction, and implementation of design. Enrollment may be limited."
+
+Introduction_to_Computational_Thinking_and_Data_Science <- "Provides an introduction to using computation to understand real-world phenomena. Topics include plotting, stochastic programs, probability and statistics, random walks, Monte Carlo simulations, modeling data, optimization problems, and clustering. Combination of 6.0001 and 6.0002 counts as REST subject."
+
+Principles_of_Microeconomics <- "Introduces microeconomic concepts and analysis, supply and demand analysis, theories of the firm and individual behavior, competition and monopoly, and welfare economics. Applications to problems of current economic policy."
+
+Econometric_Data_Science.desc <- "Introduces multiple regression methods for causal inference and descriptive analysis in economics and related disciplines. Extensions include instrumental variables methods, analysis of randomized experiments and quasi-experimental research designs, and regression with time series data. Develops the skills needed to conduct -- and critique -- empirical studies in economics and related fields. Students complete an empirical project with a written description and interpretation of results; this may involve original data collection or use of existing data sets. Applications drawn from real-world examples and frontier research. Familiarity with statistical programming languages is helpful. Students taking graduate version complete additional assignments. Limited to 70 total for versions meeting together."
+
+Introduction_to_Statistical_Methods_in_Economics.desc <- "Self-contained introduction to probability and statistics with applications in economics and the social sciences.  Covers elements of probability theory, statistical estimation and inference, regression analysis, causal inference, and program evaluation. Couples methods with applications and with assignments involving data analysis. Uses basic calculus and matrix algebra.  Students taking graduate version complete additional assignments. May not count toward HASS requirement."
+
+Probability_and_Random_Variables.desc <- "Probability spaces, random variables, distribution functions. Binomial, geometric, hypergeometric, Poisson distributions. Uniform, exponential, normal, gamma and beta distributions. Conditional probability, Bayes theorem, joint distributions. Chebyshev inequality, law of large numbers, and central limit theorem. Credit cannot also be received for 6.041A or 6.041B."
+
+Introduction_to_Probability.desc <- "An introduction to probability theory, the modeling and analysis of probabilistic systems, and elements of statistical inference. Probabilistic models, conditional probability. Discrete and continuous random variables. Expectation and conditional expectation, and further topics about random variables. Limit Theorems. Bayesian estimation and hypothesis testing. Elements of classical statistical inference. Bernoulli and Poisson processes. Markov chains. Students taking graduate version complete additional assignments."
+
+Introduction_to_Machine_Learning.desc <- "Introduces principles, algorithms, and applications of machine learning from the point of view of modeling and prediction; formulation of learning problems; representation, over-fitting, generalization; clustering, classification, probabilistic modeling; and methods such as support vector machines, hidden Markov models, and neural networks. Students taking graduate version complete additional assignments. Meets with 6.862 when offered concurrently. Recommended prerequisites: 6.006 and 18.06. Enrollment may be limited."
+
+Seminar_in_Undergraduate_Advanced_Research.desc <- "Instruction in effective undergraduate research, including choosing and developing a research topic, surveying previous work and publications, research topics in EECS and the School of Engineering, industry best practices, design for robustness, technical presentation, authorship and collaboration, and ethics. Students engage in extensive written and oral communication exercises, in the context of an approved advanced research project. A total of 12 units of credit is awarded for completion of the fall and subsequent spring term offerings. Application required; consult EECS SuperUROP website for more information."
+
+Oral_Communication.desc <- "Provides instruction in aspects of effective technical oral presentations and exposure to communication skills useful in a workplace setting. Students create, give and revise a number of presentations of varying length targeting a range of different audiences. Enrollment may be limited."
+
+Communicating_with_Data.desc <- "Equips students with the strategies, tactics, and tools to use quantitative information to inform and persuade others. Emphasizes effective communication skills as the foundation of successful careers. Develops the skills to communicate quantitative information in a business context to drive people and organizations toward better decisions. Focuses heavily on the cycle of practicing, reflecting, and revising. Students receive extensive, personalized feedback from teaching team and classmates. Limited to 25; priority to 15-2 and 6-14 majors."
+
+Intermediate_Macroeconomics.desc <- "Uses the tools of macroeconomics to investigate various macroeconomic issues in depth. Topics range from economic growth and inequality in the long run to economic stability and financial crises in the short run. Surveys many economic models used today. Requires a substantial research paper on the economics of long-run economic growth."
+
+Mathematical_Economic_Modeling.desc <- "Guides students through the process of developing and analyzing formal economic models and effectively communicating their results. Topics include decision theory, game theory, voting, and matching. Instruction and practice in oral and written communication provided. Prior coursework in microeconomic theory and/or proof-based mathematics required."
+
+Research_and_Communication_in_Economics_Topics_Methods_and_Implementation.desc <- "Exposes students to the process of conducting independent research in empirical economics and effectively communicating the results of the research. Emphasizes econometric analysis of an assigned economic question and culminates in each student choosing an original topic, performing appropriate analysis, and delivering oral and written project reports. Limited to 20 per section."
+
+Networks.desc <- "Highlights common principles that permeate the functioning of diverse technological, economic and social networks. Utilizes three sets of tools for analyzing networks—random graph models, optimization, and game theory—to study informational and learning cascades; economic and financial networks; social influence networks; formation of social groups; communication networks and the Internet; consensus and gossiping; spread and control of epidemics; control and use of energy networks; and biological networks. Students taking graduate version complete additional assignments."
+
+Optimization_Methods.desc <- "Introduces the principal algorithms for linear, network, discrete, robust, nonlinear, and dynamic optimization. Emphasizes methodology and the underlying mathematical structures. Topics include the simplex method, network flow methods, branch and bound and cutting plane methods for discrete optimization, optimality conditions for nonlinear optimization, interior point methods for convex optimization, Newton's method, heuristic methods, and dynamic programming and optimal control methods. Expectations and evaluation criteria differ for students taking graduate version; consult syllabus or instructor for specific details."
+
+Optimization_Methods_in_Business_Analytics.desc <- "Introduces optimization methods with a focus on modeling, solution techniques, and analysis. Covers linear programming, network optimization, integer programming, nonlinear programming, and heuristics. Applications to logistics, manufacturing, statistics, machine learning, transportation, game theory, marketing, project management, and finance. Includes a project in which student teams select and solve an optimization problem (possibly a large-scale problem) of practical interest."
+
+Industrial_Organization_Competitive_Strategy_and_Public_Policy.desc <- "Analyzes the current debate over the rise of monopolies, the strategic behavior and performance of firms in imperfectly competitive markets, and the role of competition policy. Topics include monopoly power; pricing, product choice, and innovation decisions by firms in oligopoly markets; static and dynamic measurement of market performance; and incentives in organizations. Requires regular participation in class discussion and teamwork in a competitive strategy game. Students taking graduate version complete additional assignments."
+
+Economics_and_ECommerce.desc <- "Uses theoretical economic models and empirical evidence to help understand the growth and future of e-commerce. Economic models help frame class discussions of, among other topics, content provision, privacy, piracy, sales taxation, group purchasing, price search, and advertising on the internet. Empirical project and paper required. Students taking graduate version complete additional assignments."
+
+Advanced_Econometrics.desc <- "Emphasizes econometric theory, methods, and applications using regression, instrumental variables, differences-in-differences, regression discontinuity designs, machine learning and big data sets, and problems related to standard errors and statistical inference. Includes a project with a theoretical, written and data-analytic component. Familiarity with Stata or a similar statistical programming language recommended. Students taking graduate version complete additional assignments."
+
+Public_Finance_and_Public_Policy.desc <- "Explores the role of government in the economy, applying tools of basic microeconomics to answer important policy questions such as government response to global warming, school choice by K-12 students, Social Security versus private retirement savings accounts, government versus private health insurance, setting income tax rates for individuals and corporations. Students taking the graduate version complete additional assignments."
+
+Labor_Economics_and_Public_Policy.desc <- "Provides an introduction to the labor market, how it functions, and the important role it plays in people's lives. Topics include supply and demand, minimum wages, labor market effects of social insurance and welfare programs, the collective bargaining relationship, discrimination, human capital, and unemployment. Completion of or concurrent enrollment in 14.03 or 14.04 recommended. Students taking graduate version complete additional assignments."
+
+Political_Economy_and_Economic_Development.desc <- "Explores the relationship between political institutions and economic development, covering key theoretical issues as well as recent empirical evidence. Topics include corruption, voting, vote buying, the media, and war. Discusses not just what we know on these topics, but how we know it, covering how to craft a good empirical study or field experiment and how to discriminate between reliable and unreliable evidence.  Some basic familiarity with probability and/or statistics is useful for this class.  Students taking graduate version complete additional assignments."
+
+Stochastic_Models_in_Business_Analytics.desc <- "Introduces core concepts in data-driven stochastic modeling that inform and optimize business decisions under uncertainty. Covers stochastic models and frameworks, such as queuing theory, time series forecasting, network models, dynamic programming, and stochastic optimization. Draws on real-world applications, with several examples from retail, healthcare, logistics, supply chain, social and online networks, and sports analytics."
+
+Intermediate_Microeconomic_Theory.desc <- "Analysis of consumer and producer decisions including analysis of competitive and monopolistic markets. Price-based partial and general equilibrium analysis. Introduction to game theory as a foundation for the strategic analysis of economic situations. Imperfect competition, dynamic games among firms. Failures of general equilibrium theory and their resolutions: externalities, public goods, incomplete information settings, signaling, screening, insurance, alternative market mechanisms, auctions, design of markets."
+
+Economic_Applications_of_Game_Theory.desc <- "Analysis of strategic behavior in multi-person economic settings. Introduction to solution concepts, such as rationalizability, backwards induction, Nash equilibrium, subgame-perfect equilibrium, and sequential equilibrium. Strong emphasis on dynamic games, such as repeated games. Introduction to Bayesian games, focusing on Bayesian Nash Equilibrium, Perfect Bayesian Equilibrium, and signaling games. Applications drawn from microeconomics: imperfect competition, implicit cartels, bargaining, and auctions."
+
+Psychology_and_Economics.desc <- "Introduces the theoretical and empirical literature of behavioral economics. Examines important and systematic departures from the standard models in economics by incorporating insights from psychology and other social sciences. Covers theory and evidence on time, risk, and social preferences; beliefs and learning; emotions; limited attention; and frames, defaults, and nudges. Studies applications to many different areas, such as credit card debt, procrastination, retirement savings, addiction, portfolio choice, poverty, labor supply, happiness, and government policy. Students participate in surveys and experiments in class, review evidence from lab experiments, examine how the results can be integrated into models, and test models using field and lab data. Students taking graduate version complete additional assignments."
+
+Strategy_and_Information.desc <- "Covers modern applications of game theory where incomplete information plays an important role. Applications include bargaining, auctions, global games, market design, information design, and network economics."
+
+Market_Design.desc <- "Covers the design and operation of organized markets, building on ideas from microeconomic and game theory. Topics may include mechanism design, auctions, matching markets, and other resource allocation problems."
+
+Organizational_Economics.desc <- "Provides a rigorous, but not overly technical introduction to the economic theory of organization together with a varying set of applications. Addresses incentives, control, relationships, decision processes, and organizational culture and performance. Introduces selected fundamentals of game theory. Students taking graduate version complete additional assignments. Limited to 60."
+
+International_Trade.desc <- "Provides an introduction to theoretical and empirical topics in international trade. Offers a brief history of globalization. Introduces the theory of comparative advantage and discusses its implications for international specialization and wage inequality. Studies the determinants and consequences of trade policy, and analyzes the consequences of immigration and foreign direct investment."
+```
+
+## Loading in course descriptions FPU
+
+```{r}
+#Data Science Core
+
+Introduction_to_STEM.desc <- "This foundational course provides practical mathematical application to problems in engineering, computer science, and related STEM disciplines. All STEM applications will be presented within the context math topics and reinforced through extensive examples of their use in the core STEM courses. This course is designed to put the application first and then apply the mathematics to model or simulate it with hand calculations and/or computer software. Student will focus on their ‘habits of mind’ to consciously practice problem solving techniques, exercise best practice formats, and implement software that will provide the foundation for future success in a STEM curriculum."
+
+Concepts_and_Methods_for_Engineering_and_Computer_Science.desc <- "Students learn foundational skills, calculation methods, and basic programming in Excel for engineering problems. This course supports students’ abilities to calculate and analyze data and provide them a foundation for applying engineering skills throughout the curriculum, in internship, and employment."
+
+Introduction_to_Computation_and_Programming.desc <- "This course is an introduction to computational thinking and the art of computer programming using the C programming language. Students will learn fundamental programming concepts and systematic design techniques. They will use them to write programs that computationally solve and reduce problems. At the end of the course, students will be able to use a programming language without focusing on the language specifics. No prior programming background is required and a working knowledge of high school level algebra is expected."
+
+Object_Oriented_Programming.desc <- "This is an intermediate programming course designed for students with prior programming experience. This course focuses on object-oriented programming concepts and techniques using C++. The covered topics will include: streams, classes, recursion, template classes, file handling, and exception handling."
+
+Introduction_to_Unix.desc <- "This is an introductory course to Linux and Unix operating systems. The course will cover topics including:  commands, utilities, text editors, shell programming, programming tools, and regular expressions."
+
+Database_1.desc <- "The use of Structured Query Language (SQL) and broad knowledge of database design, implementation, and systems development are presented in this course. Emphasis is places upon data modeling concepts, approaches and techniques, and stages in database development processes (conceptual, logical and physical design)."
+
+Introduction_to_Computer_Networks.desc <- "This course provides an introduction to fundamental concepts in computer networks, including their design and implementation. Topics covered include all seven layers of OSI Reference Model, network protocols (providing reliability and congestion control), routing, and link access. Special attention is also paid to wireless networks and security."
+
+Data_Mining_and_Text_Mining.desc <- "This course addresses the knowledge discovery process and the use of data mining concepts and tools as part of that process. In depth analysis of processes for automatically extracting valid, useful, and previously unknown information from data sources and using the information to make decisions is also covered."
+
+Operations_Research.desc <- "Basic approaches for modeling and solving operation efficiency challenges, and predicting and demonstrating cost-savings or other value-added gains."
+
+Data_Structures_and_Algorithms.desc <- "The course introduces program run-time analysis and algorithm design and analysis. Topics include: data abstraction principals, serial and parallel data structures, linked lists, graphs, trees, divide and conquer algorithms, greedy algorithms, and linear programming."
+
+Engineering_and_Technology_Project_Management.desc <- "This course discusses planning, controlling, and evaluating technology and engineering projects. Topics include modeling, project organization, risk analysis, technical forecasting, time and cost estimation and accommodation, and resource allocation and leveling. Verbal and written technical and managerial reports are also required."
+
+Introduction_to_Data_Science.desc <- "Students will learn how to work through data science problems within a modern statistical programming language. The course covers the complete analytical process, from gathering the data, to applying appropriate exploratory and statistical analysis, and communicating the results. Important topics in data science projects workflows, version control, and efficient programming are integrated throughout the course. Fundamentals of analytics, data visualization, and management of data are presented."
+
+Statistical_Learning.desc <- "This is an introductory-level course in supervised learning. Topics include classification and regression, cross-validation and bootstrap, model selection, dimension reduction, tree-based methods, random forests and boosting, support-vector machines, principal components, and cluster analysis. Students will have hands-on experience in model building, machine learning, and implementation."
+
+Introduction_to_Programming_Using_Python.desc <- "This course is an introduction to computational thinking and the art of computer programming using Python. Students will learn fundamental programming concepts and systematic design techniques. They will use them to write programs that computationally solve and reduce problems. At the end of the course, students will be able to use a programming language without focusing on the language specifics. No prior programming background is required and a working knowledge of high school level algebra is expected."
+
+Machine_Learning.desc <- "An overview of machine learning algorithms and their applications. Topics covered include: supervised and unsupervised learning, clustering and classification, linear and logistic regression, dimensionality reduction, support vector machines, anomaly detection."
+
+Time_Series_Analysis_for_Business_Data_Science_and_Economics.desc <- "The objective of the course to develop student’s ability to build models of time series data appropriate to the properties exhibited by the data, apply appropriate techniques to forecast future values, conduct forecast validation, and analyze the strengths, weaknesses, and limitations of forecasts in their intended use."
+
+Cloud_Infrastructure_and_Services.desc <- "This course will develop the technical expertise needed for cloud computing. The student will learn the essentials of cloud computing, business security and compliance considerations, migrating to the cloud, architecting a cloud server, and how to troubleshoot cloud services. This course discusses the management of the cloud environment and considerations for leveraging cloud providers for Infrastructure as a Service (IaaS), Platform as a Service (PaaS), and Software as a Service (SaaS). Current and emerging cloud providers will be surveyed and analyzed in regard to implementing a specific cloud solution, use of contemporary cloud management tools, and articulating issues involved in migrating to a cloud environment are presented."
+
+#Concentration Courses
+
+## Big Data Analytics
+
+Database_2.desc <- "Datacenter infrastructure and management including technologies such as: virtualization, networking, server consolidation, green IT computing, and network storage configurations are discussed. The utilization of virtualized platforms, networking and infrastructure configurations as well as the deployment, analysis and management of applications are also presented."
+
+Topics_in_Big_Data_Analytics.desc <- "This course provides the fundamental knowledge to capture and analyze all sorts of large-scale data from a variety of fields, such as people behavior, sensors, biological signals, finance, and more. Platforms for data storage system and distributed processing of large data sets, Hadoop HDFS and MapReduce, Spark, and others, and different ways of handling analytics algorithms on different platforms will be introduced."
+
+Data_Warehousing.desc <- "Fundamentals of building and populating a data mart to support the planning, designing and building of business intelligence applications and data analytics are covered in this course."
+
+## Health Systems Engineering
+
+Introduction_to_Health_Systems_Engineering.desc <- "This course focuses on the fundamental principles of healthcare systems engineering examining system processes and design using quantitative tools to perform analyses and decision making in the context of healthcare from a systems perspective. Key components of the health care system including Healthcare policy, laws and ethics as well as performance measures including healthcare delivery, patient flow, patient safety, and cost-effectiveness modeling."
+
+Health_Systems_Modeling_and_Optimization.desc <- "This course focuses on continuous improvement in healthcare through mathematical and computational modeling. Key components include Lean thinking in health care operations, health logistics capacity management, optimization, scheduling and information management."
+
+Health_Systems_Implementation.desc <- "This course focuses on the development of organizational structures. This course will be devoted to designing a Health Systems experiment focused on the modeling, evaluation and optimization of a health system and procedure by implementing various optimization and data analytics techniques"
+
+## Quantitative Economics & Econometrics
+
+Game_Theory_and_Strategic_Decisions.desc <- "An introduction to modern game theory; the study of situations of profound interdependence between a small number of decision makers. Includes Nash equilibrium and other solution concepts, repeated games, and incomplete and asymmetric information. Covers both formal theory and applications such as auctions, oligopoly, entry deterrence, and the work of teams."
+
+Econometrics_Causal_Inference_Panel_and_Survey_Data.desc <- "The course covers advanced concepts and methods employed in empirical economic analysis. A major focus is on causal inference using regression analysis and related strategies such as regression discontinuity and difference-in-differences designs and instrumental variables. The course also covers empirical models for panel and survey data."
+
+Contemporary_Economic_Issues.desc <- "Principles of Microeconomics or Macroeconomics (ECO 2023 or 2013), Statistics 1 (STA 2023) and Calculus 1 (MAC 2311)
+Course Description: Content focuses on the analysis of current economic issues and policy and the study of current economic methods and theories. Students will develop broad familiarity with contemporary economic tools and thinking and the ability to formulate informed economic analysis and opinions on a broad range of current topics."
+
+Economic_Analysis_for_Technologists.desc <- "The course applies the tools of economic analysis to develop a systematic approach to critical thinking about problems in science and technology management, particularly under conditions of incomplete or imperfect information. Topics include: time value of money; risk and uncertainty; demand approximation and forecasting; information acquisition, use, and value; real option value; optimal production and pricing under uncertainty; peak load pricing and optimal capacity; decisions in strategic environments, and market structure. When appropriate, emphasis will be placed on applications in the areas of science, engineering and technology."
+
+## Intelligent Mobility
+
+Introduction_to_Networks_and_a_Connected_World.desc <- "Networks are deeply integrated in all aspects of our lives such as social networks, network of communication devices, the internet of things, transportation system and logistics or the network of brain cells. In this course, networks will be viewed from a graph theory perspective including directed and undirected graphs, paths, cycles, loops and trees. The course will focus on the spatial and the temporal nature of the network elements across different modes. Path flow estimation, route choice as well as link cost functions and the equilibrium principle will be discussed. The course will emphasize modeling of intelligent mobility networks by working on a class project."
+
+Introduction_to_Computer_Networks.desc <- "This course provides an introduction to fundamental concepts in computer networks, including their design and implementation. Topics covered include all seven layers of OSI Reference Model, network protocols (providing reliability and congestion control), routing, and link access. Special attention is also paid to wireless networks and security."
+
+Data_Analytics_for_Smart_City_and_Transportation.desc <- "This course focuses on design strategies, simulation techniques, and data analytics to strengthen the knowledge of existing cities, and understand the needs and requirements of future cities through a data driven analysis. Smart cities utilize information and communication technologies to enhance the quality and performance of transportation, utility and energy services from cost and consumption perspectives. The course explains how smart cities operate in a controlled and monitored network environments and discusses techniques to work with data generated by transportation and communication networks, crowd-sensing systems and other relevant technologies."
+
+Intelligent_Mobility.desc <- "Intelligent Mobility involves the application of advanced technologies to connect people, places, and goods. This course provides students with necessary understanding of smart and intelligent technologies that facilitate research, design, adoption and evaluation of advanced automation and connected vehicles. The emerging capabilities of automation technologies and their early deployment along with the various techniques of enterprise data management will also be discussed."
+
+National_Transportation_Management.desc <- "This course provides a comprehensive overview of transportation management and policy and includes the perspective of recent technological advancements in connected and autonomous vehicles. Carrier selection and management, purchasing, order processing, facility operation and design, distribution, operations, transportation costing and negotiation are also discussed."
+
+Reverse_Logistics.desc <- "In this course forward-moving logistics is compared to reverse-moving logistics. Both goods and information are discussed. Topics include federal and state regulations, waste management, recycled materials, technology, financial controls, stakeholders, and performance measurement."
+
+Air_Transportation_and_Operations.desc <- "This course covers air transportation including major, regional, cargo, and general carriers."
+
+#Data Science electives
+
+Distributed_Information_Systems.desc <- "This course discusses server based operating systems which are deployed, administered and managed via remote locations. Emphasis is placed upon the hardware required for interconnecting digital devices for the purpose of enabling data communication through a network. Bus architectures, ports, network cards, cabling, routers, switches are also covered. Ensuring network reliability and optimizing network performance are presented."
+
+Advanced_Topics_in_Programming.desc <- "This course is an advanced level computer programming course. It reinforces the object-oriented programming concepts and techniques using Java. The course will cover topics include interfaces, exception handling, advanced GUI design, graphics and Java 2D, regular expressions, object serialization, collections, concurrency, accessing databases, and networking."
+
+Introduction_to_Parallel_and_Distributed_Computing.desc <- "The course introduces concepts of parallel algorithms analysis and implementation. Topics covered: shared memory model, distributed memory model, concurrency, synchronization, message passing interface (MPI), heterogeneous parallel programming, GPU programming."
+
+Advanced_Data_Science.desc <- "This course introduces advanced concepts, methodologies and techniques in relation to data science including novel learning approaches, deep learning, reinforcement learning, novel data mining methodologies and emerging modes of data acquisition and aggregation. The course will develop students’ understanding of data mining concepts and their ability to carry out advanced data science projects."
+
+Entrepreneurial_Opportunity_Analysis.desc <- "In this course, students assess the personal attributes, as well as the skills base, professional talent, and educational and work experiences within an organization that are necessary to create successful business ideas. Students examine the external environment to identify trends and needs in the marketplace for potential business opportunities. Each individual has the opportunity to screen potential business ideas by assessing whether or not these compliment the individual and his/her organization based on an evaluation of its strengths and skills base, as well as the student’s personal, professional, and financial goals. Students develop initial market feasibility analyses to test their concepts through basic market research."
+
+Implementation_of_EHR_and_EMR_and_Clinical_Support_Methods.desc <- "This course is an in-depth study of the clinical information system processes, models and alternatives. Discussions focus on the most current emerging trends in electronic health records, including social, ethical, economic and cultural impacts of choices."
+
+Policy_Issues_in_Health_Informatics.desc <- "This course covers regulatory, political, cultural and ethical issues as applied to national, agency, organizational and individual healthcare services and alternative delivery methods."
+
+Artificial_Intelligence.desc <- "This course covers fundamental concepts such as search and knowledge representation and applied work in areas such as planning, game playing, and vision. Topics included: logical reasoning, constraint satisfaction problems, graph search algorithms, Bayes rule, Bayesian networks, multi-agent system, neural networks, decision trees, and natural language processing."
+
+Discrete_Event_Simulation.desc <- "Discrete Event Simulation models a large complex system in order to study and analyze its dynamic behavior over time.  Simulation of complex discrete-event systems with applications in industrial and service industries.  Course topics include modeling and programming, simulations in one or more high-level computer packages such as simul8, input distribution modeling, generating random numbers, and statistical analysis of simulation output data.  The course will contain a team simulation project."
+
+Data_Security.desc <- "Access control systems, telecommunications and network security, security management practices, application and systems development security, cryptography, disaster recovery planning, legal and ethical issues, and physical security are covered in this course. Special topics include Network Security, Cryptography, Access Control, Security Architecture and Models, Applications and Systems Development, and Vulnerability Assessment."
+
+Software_Engineering.desc <- "The course covers object-oriented software engineering, the software development life cycle, system specification, software design patterns, and the methods of software measurement and estimation."
+
+Computer_Vision.desc <- "The course introduces how computers see and interpret the visual world and how this interpretation can be used to enhance game play experience. Topics covered: projections and coordinate systems, camera modeling, stereo vision, edge detection, filtering, segmentation, optical flow, motion vision, color vision, object representation, face recognition, object recognition."
+
+#Program Capstone Sequence
+
+Data_Analytics_Capstone_I.desc <- "This course is part one of the Senior Capstone sequence for data science and business analytics. This advanced course covers critical thinking and problem solving techniques applied to data analytics projects. The goal of this course is to carry out an industry-relevant project in applied data science and business analytics that synthesizes concepts from data acquisition, analytics, visualization, data management, and modeling."
+
+Data_Analytics_Capstone_II.desc <- "This course is part two of the Senior Capstone sequence for data science and business analytics. This advanced course covers critical thinking and problem solving techniques applied to data analytics projects. The goal of this course is to carry out an industry-relevant project in applied data science and business analytics that synthesizes concepts from data acquisition, analytics, visualization, data management, modeling, and application development and deployment. Students will complete intensive research and produce significant written documentation of the project."
+```
+
+
+## Combined course descriptions MIT
+
+```{r}
+MIT.desc_raw <- c(Linear_Algebra.desc,
+Introduction_to_Computer_Science_Programming_in_Python.desc,
+Introduction_to_Algorithms.desc,
+Mathematics_for_Computer_Science.desc,
+Design_and_Analysis_of_Algorithms.desc,
+Fundamentals_of_Programming.desc,
+Introduction_to_Computational_Thinking_and_Data_Science,
+Principles_of_Microeconomics,
+Econometric_Data_Science.desc,
+Introduction_to_Statistical_Methods_in_Economics.desc,
+Probability_and_Random_Variables.desc,
+Introduction_to_Probability.desc,
+Introduction_to_Machine_Learning.desc,
+Seminar_in_Undergraduate_Advanced_Research.desc,
+Oral_Communication.desc,
+Communicating_with_Data.desc,
+Intermediate_Macroeconomics.desc,
+Mathematical_Economic_Modeling.desc,
+Research_and_Communication_in_Economics_Topics_Methods_and_Implementation.desc,
+Networks.desc,
+Optimization_Methods.desc,
+Optimization_Methods_in_Business_Analytics.desc,
+Industrial_Organization_Competitive_Strategy_and_Public_Policy.desc,
+Economics_and_ECommerce.desc,
+Advanced_Econometrics.desc,
+Public_Finance_and_Public_Policy.desc,
+Labor_Economics_and_Public_Policy.desc,
+Political_Economy_and_Economic_Development.desc,
+Stochastic_Models_in_Business_Analytics.desc,
+Intermediate_Microeconomic_Theory.desc,
+Economic_Applications_of_Game_Theory.desc,
+Psychology_and_Economics.desc,
+Strategy_and_Information.desc,
+Market_Design.desc,
+Organizational_Economics.desc,
+International_Trade.desc)
+```
+
+```{r}
+mit_test <- c()
+```
+
+
+```{r}
+MIT.desc_raw
+```
+
+## Combined couse descriptions FPU
+
+```{r}
+FPU.desc_raw <- c(Introduction_to_STEM.desc,
+Concepts_and_Methods_for_Engineering_and_Computer_Science.desc,
+Introduction_to_Computation_and_Programming.desc,
+Object_Oriented_Programming.desc,
+Introduction_to_Unix.desc,
+Database_1.desc,
+Introduction_to_Computer_Networks.desc,
+Data_Mining_and_Text_Mining.desc,
+Operations_Research.desc,
+Data_Structures_and_Algorithms.desc,
+Engineering_and_Technology_Project_Management.desc,
+Introduction_to_Data_Science.desc,
+Statistical_Learning.desc,
+Introduction_to_Programming_Using_Python.desc,
+Machine_Learning.desc,
+Time_Series_Analysis_for_Business_Data_Science_and_Economics.desc,
+Cloud_Infrastructure_and_Services.desc,
+Database_2.desc,
+Topics_in_Big_Data_Analytics.desc,
+Data_Warehousing.desc,
+Introduction_to_Health_Systems_Engineering.desc,
+Health_Systems_Modeling_and_Optimization.desc,
+Health_Systems_Implementation.desc,
+Game_Theory_and_Strategic_Decisions.desc,
+Econometrics_Causal_Inference_Panel_and_Survey_Data.desc,
+Contemporary_Economic_Issues.desc,
+Economic_Analysis_for_Technologists.desc,
+Introduction_to_Networks_and_a_Connected_World.desc,
+Introduction_to_Computer_Networks.desc,
+Data_Analytics_for_Smart_City_and_Transportation.desc,
+Intelligent_Mobility.desc,
+National_Transportation_Management.desc,
+Reverse_Logistics.desc,
+Air_Transportation_and_Operations.desc,
+Distributed_Information_Systems.desc,
+Advanced_Topics_in_Programming.desc,
+Introduction_to_Parallel_and_Distributed_Computing.desc,
+Advanced_Data_Science.desc,
+Entrepreneurial_Opportunity_Analysis.desc,
+Implementation_of_EHR_and_EMR_and_Clinical_Support_Methods.desc,
+Policy_Issues_in_Health_Informatics.desc,
+Artificial_Intelligence.desc,
+Discrete_Event_Simulation.desc,
+Data_Security.desc,
+Software_Engineering.desc,
+Computer_Vision.desc,
+Data_Analytics_Capstone_I.desc,
+Data_Analytics_Capstone_II.desc)
+```
+
+```{r}
+FPU.desc_raw
+```
+
+Custom stopwords
+```{r}
+my_custom_stopwords <- c("course", 
+                      "topics", 
+                      "will",
+                      "also",
+                      "include",
+                      "covers",
+                      "work", 
+                      "well",
+                      "using",
+                      "use",
+                      "covered",
+                      "including",
+                      "one",
+                      "can",
+                      "get",
+                      "hence",
+                      "goes",
+                      "next",
+                      "given",
+                      "must",
+                      "therefore",
+                      "chapter",
+                      "find"
+                      )
+```
+
+# Analysis
+
+## FPU
+
+### Removing Stopwords
+
+```{r}
+FPU.desc_corp <- Corpus(VectorSource(FPU.desc_raw %>% 
+                                       removeWords(stop_words$word)))
+```
+
+
+```{r}
+FPU.desc_dtm <-DocumentTermMatrix(FPU.desc_corp,control = list(removePunctuation = T,
+                                                             stopwords = T,
+                                                             tolower = T,
+                                                             stemming = F,
+                                                             removeNumbers = T,
+                                                             stripWhitespace = T,
+                                                             bounds = list(global=c(3,Inf)))) 
+```
+
+
+
+
+```{r}
+inspect(FPU.desc_dtm)
+```
+
+
+```{r}
+inspect(FPU.desc_dtm[1:10,]) #Examine 10 words at a time across documents
+```
+
+
+Frequent terms that appear at least 3 times across all documents
+
+```{r}
+findFreqTerms(FPU.desc_dtm, lowfreq = 3, highfreq = Inf) 
+```
+
+
+Compare the distribution of frequently appearing words 
+```{r}
+FPU.desc_freq <- findFreqTerms(FPU.desc_dtm, lowfreq = 1, highfreq = Inf)
+as.matrix(FPU.desc_dtm[,FPU.desc_freq]) 
+```
+
+ 
+
+Examine frequent Terms and their association. In this example we are looking at the frequent terms related to data. The correlation limit that is being examined is a correlation of 25% or greater. 
+
+```{r}
+findAssocs(FPU.desc_dtm, terms = "data", corlimit = 0.25)
+```
+
+Convert Document term matrix to data frame
+
+
+```{r}
+FPU.desc_dtm.m <- as.matrix(FPU.desc_dtm)
+FPU.desc_dtm.v <- sort(rowSums(FPU.desc_dtm.m),decreasing=TRUE)
+FPU.desc_dtm.d <- data.frame(word = names(FPU.desc_dtm),freq=FPU.desc_dtm.v)
+```
+
+```{r}
+ML.dtm<- tidy(FPU.desc_dtm)
+```
+
+
+```{r}
+ML.dtm
+```
+
+
+```{r}
+FPU.desc_tbl <- table(FPU.desc_df$term)
+wordcloud(names(FPU.desc_tbl), FPU.desc_tbl, min.freq=1,
+          max.words=200, random.order=FALSE, rot.per=0.35,
+          colors=brewer.pal(8, "Dark2"))
+```
+```{r}
+FPU.desc_tbl
+```
+
+
+
+ 
+```{r}
+#barplot(MIT.desc_dtm.d[1:11,]$freq, las = 2, names.arg = MIT.desc_dtm.d[1:11,]$word,
+        #col ="lightblue", main ="Most frequent words",
+        #ylab = "Word frequencies")
+```
+Create Bar chart 
+```{r}
+barplot(FPU.desc_df$count, las = 2, names = FPU.desc_df$term,
+        col ="lightblue", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+
+### Topic Modeling
+
+```{r}
+inspect(FPU.desc_dtm)
+```
+```{r}
+vocabulary <- FPU.desc_df$term[ FPU.desc_df$count > 1 & FPU.desc_df$count < nrow(FPU.desc_df) / 2 ]
+```
+
+```{r}
+FPU.desc_dgC <-  Matrix::sparseMatrix(i=FPU.desc_dtm$i, 
+                           j=FPU.desc_dtm$j, 
+                           x=FPU.desc_dtm$v, 
+                           dims=c(FPU.desc_dtm$nrow, FPU.desc_dtm$ncol),
+                           dimnames = FPU.desc_dtm$dimnames)
+```
+<https://towardsdatascience.com/beginners-guide-to-lda-topic-modelling-with-r-e57a5a8e7a25>
+
+### Model tuning
+```{r}
+k_list <- seq(1, 30, by = 1)
+model_dir <- paste0("models_", digest::digest(vocabulary, algo = "sha1"))
+if (!dir.exists(model_dir)) dir.create(model_dir)
+model_list <- TmParallelApply(X = k_list, FUN = function(k){
+  filename = file.path(model_dir, paste0(k, "_topics.rda"))
+  
+  if (!file.exists(filename)) {
+    m <- FitLdaModel(dtm = FPU.desc_dgC, k = k, iterations = 500)
+    m$k <- k
+    m$coherence <- CalcProbCoherence(phi = m$phi, dtm = FPU.desc_dgC, M = 5)
+    save(m, file = filename)
+  } else {
+    load(filename)
+  }
+  
+  m
+}, export=c("FPU.desc_dgC", "model_dir")) # export only needed for Windows machines
+#model tuning
+#choosing the best model
+coherence_mat <- data.frame(k = sapply(model_list, function(x) nrow(x$phi)), 
+                            coherence = sapply(model_list, function(x) mean(x$coherence)), 
+                            stringsAsFactors = FALSE)
+ggplot(coherence_mat, aes(x = k, y = coherence)) +
+  geom_point() +
+  geom_line(group = 1)+
+  ggtitle("Best Topic by Coherence Score for Florida Poly Courses") + theme_minimal() +
+  scale_x_continuous(breaks = seq(1,30,1)) + ylab("Coherence")
+```
+
+Selecting model with highest coherence
+```{r}
+model <- model_list[which.max(coherence_mat$coherence)][[ 1 ]]
+model$top_terms <- GetTopTerms(phi = model$phi, M = 20)
+top20_wide <- as.data.frame(model$top_terms)
+top20_wide
+``` 
+
+Selecting model with 7 topics
+```{r}
+model <- model_list[[7]]
+model$top_terms <- GetTopTerms(phi = model$phi, M = 20)
+top20_wide <- as.data.frame(model$top_terms)
+top20_wide
+```
+
+
+Cluster Dendrogram
+```{r}
+model$topic_linguistic_dist <- CalcHellingerDist(model$phi)
+model$hclust <- hclust(as.dist(model$topic_linguistic_dist), "ward.D")
+model$hclust$labels <- paste(model$hclust$labels, model$labels[ , 1])
+plot(model$hclust)
+```
+
+
+```{r}
+FPU.desc_lda <- LDA(FPU.desc_dtm, k = 7, control = list(alpha = 0.1))
+FPU.desc_lda
+```
+
+```{r}
+FPU.desc_topics <- tidy(FPU.desc_lda, matrix = "beta")
+FPU.desc_topics
+```
+
+
+```{r}
+FPU.desc_top_terms <- 
+  FPU.desc_topics %>%
+  group_by(topic) %>%
+  top_n(5, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+FPU.desc_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+## MIT
+
+```{r}
+MIT.desc_corp <- Corpus(VectorSource(MIT.desc_raw %>% removeWords(stop_words$word)))
+```
+
+
+```{r}
+MIT.desc_dtm <-DocumentTermMatrix(MIT.desc_corp,control = list(removePunctuation = T,
+                                                             stopwords = T,
+                                                             tolower = T,
+                                                             stemming = F,
+                                                             removeNumbers = T,
+                                                             stripWhitespace = T,
+                                                             bounds = list(global=c(3,Inf)))) 
+```
+
+
+```{r}
+inspect(MIT.desc_dtm)
+```
+
+
+```{r}
+inspect(MIT.desc_dtm[1:10,]) #Examine 10 words at a time across documents
+```
+
+
+Frequent terms that appear at least 3 times across all documents
+
+```{r}
+findFreqTerms(MIT.desc_dtm, lowfreq = 3, highfreq = Inf) 
+```
+
+
+Compare the distribution of frequently appearing words 
+```{r}
+MIT.desc_freq <- findFreqTerms(MIT.desc_dtm, lowfreq = 1, highfreq = Inf)
+as.matrix(MIT.desc_dtm[MIT.desc_freq,]) 
+```
+
+Sum the count of all frequently occurring words
+```{r}
+MIT.desc_sum <- as.matrix(MIT.desc_dtm[ft,])
+sort(apply(MIT.desc_dtm, 1, sum), decreasing = TRUE)
+```
+ 
+
+Examine frequent Terms and their association. In this example we are looking at the frequent terms related to data. The correlation limit that is being examined is a correlation of 25% or greater. 
+
+```{r}
+findAssocs(MIT.desc_dtm, terms = "data", corlimit = 0.25)
+```
+
+
+Convert term document matrix to a data frame 
+
+```{r}
+MIT.desc_dtm.m <- as.matrix(MIT.desc_dtm)
+MIT.desc_dtm.v <- sort(rowSums(MIT.desc_dtm.m),decreasing=TRUE)
+MIT.desc_dtm.d <- data.frame(word = names(MIT.desc_dtm),freq=MIT.desc_dtm.v)
+```
+
+```{r}
+MIT.desc_dtm.v
+```
+
+```{r}
+MIT.desc_df<- tidy(MIT.desc_dtm)
+```
+
+
+```{r}
+MIT.desc_df
+```
+
+
+
+Create word cloud
+```{r}
+set.seed(1234)
+wordcloud(words = MIT.desc_df$term, freq = MIT.desc_df$count, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+ 
+
+Create Bar chart 
+```{r}
+barplot(MIT.desc_dtm.d[1:11,]$freq, las = 2, names.arg = MIT.desc_dtm.d[1:11,]$word,
+        col ="lightblue", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+
+### Topic Modeling
+
+```{r}
+inspect(MIT.desc_dtm)
+```
+
+```{r}
+vocabulary <- MIT.desc_df$term[ MIT.desc_df$count > 1 & MIT.desc_df$count < nrow(MIT.desc_df) / 2 ]
+```
+
+```{r}
+MIT.desc_dgC <-  Matrix::sparseMatrix(i=MIT.desc_dtm$i, 
+                           j=MIT.desc_dtm$j, 
+                           x=MIT.desc_dtm$v, 
+                           dims=c(MIT.desc_dtm$nrow, MIT.desc_dtm$ncol),
+                           dimnames = MIT.desc_dtm$dimnames)
+```
+<https://towardsdatascience.com/beginners-guide-to-lda-topic-modelling-with-r-e57a5a8e7a25>
+
+### Model tuning
+```{r}
+k_list <- seq(1, 30, by = 1)
+model_dir <- paste0("models_", digest::digest(vocabulary, algo = "sha1"))
+if (!dir.exists(model_dir)) dir.create(model_dir)
+model_list <- TmParallelApply(X = k_list, FUN = function(k){
+  filename = file.path(model_dir, paste0(k, "_topics.rda"))
+  
+  if (!file.exists(filename)) {
+    m <- FitLdaModel(dtm = MIT.desc_dgC, k = k, iterations = 500)
+    m$k <- k
+    m$coherence <- CalcProbCoherence(phi = m$phi, dtm = MIT.desc_dgC, M = 5)
+    save(m, file = filename)
+  } else {
+    load(filename)
+  }
+  
+  m
+}, export=c("MIT.desc_dgC", "model_dir")) # export only needed for Windows machines
+#model tuning
+#choosing the best model
+coherence_mat <- data.frame(k = sapply(model_list, function(x) nrow(x$phi)), 
+                            coherence = sapply(model_list, function(x) mean(x$coherence)), 
+                            stringsAsFactors = FALSE)
+ggplot(coherence_mat, aes(x = k, y = coherence)) +
+  geom_point() +
+  geom_line(group = 1)+
+  ggtitle("Best Topic by Coherence Score for MIT Courses") + theme_minimal() +
+  scale_x_continuous(breaks = seq(1,30,1)) + ylab("Coherence")
+```
+
+Selecting model with highest coherence
+```{r}
+model <- model_list[which.max(coherence_mat$coherence)][[ 1 ]]
+model$top_terms <- GetTopTerms(phi = model$phi, M = 20)
+top20_wide <- as.data.frame(model$top_terms)
+top20_wide
+``` 
+
+Selecting model with 7 topics
+```{r}
+model <- model_list[[9]]
+model$top_terms <- GetTopTerms(phi = model$phi, M = 20)
+top20_wide <- as.data.frame(model$top_terms)
+top20_wide
+```
+
+
+Cluster Dendrogram
+```{r}
+model$topic_linguistic_dist <- CalcHellingerDist(model$phi)
+model$hclust <- hclust(as.dist(model$topic_linguistic_dist), "ward.D")
+model$hclust$labels <- paste(model$hclust$labels, model$labels[ , 1])
+plot(model$hclust)
+```
+
+
+```{r}
+MIT.desc_lda <- LDA(MIT.desc_dtm, k = 7, control = list(alpha = 0.1))
+MIT.desc_lda
+```
+
+```{r}
+MIT.desc_topics <- tidy(MIT.desc_lda, matrix = "beta")
+MIT.desc_topics
+```
+
+
+```{r}
+MIT.desc_top_terms <- 
+  MIT.desc_topics %>%
+  group_by(topic) %>%
+  top_n(5, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+MIT.desc_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+## Comparison and Comminality 
+Join FPU and MIT course descriptions
+```{r}
+FPU_MIT<- as.list(c(FPU.desc_raw, MIT.desc_raw))
+FPU_MIT
+```
+
+```{r}
+corp <- FPU_MIT
+corp <- tm_map(corp, removePunctuation)
+corp <- tm_map(corp, content_transformer(tolower))
+corp <- tm_map(corp, removeNumbers)
+corp <- tm_map(corp, function(x)removeWords(x,stopwords()))
+
+term.matrix <- TermDocumentMatrix(corp)
+term.matrix <- as.matrix(term.matrix)
+colnames(term.matrix) <- c("FPU","MIT")
+comparison.cloud(term.matrix,max.words=40,random.order=FALSE)
+comparison.cloud(term.matrix,max.words=40,random.order=FALSE,
+	title.colors=c("red","blue"),title.bg.colors=c("grey40","grey70"))
+comparison.cloud(term.matrix,max.words=40,random.order=FALSE,
+	match.colors=TRUE)
+```
+
+
+Comparison
+```{r}
+par(mfrow=c(1,1))
+comparison.cloud(tdm, random.order=FALSE, colors = c("indianred3","lightsteelblue3"),
+                 title.size=2.5, max.words=400)
+```
+
+Comminality
+```{r}
+commonality.cloud(tdm, random.order=FALSE, scale=c(5, .5),colors = brewer.pal(4, "Dark2"), max.words=400)
+```
+
+#Analysis of Entire Course Transcripts
+ 
+```{r}
+PROGRAM_raw <- list.files(path = "C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Courses_Combined", pattern = ".pdf$") #create vector of pdf file names
+Encoding(PROGRAM_raw) <- "UTF-8"
+iconv(PROGRAM_raw, from = "UTF-8", to = "ASCII//TRANSLIT")
+```
+
+```{r}
+PROGRAM_loaded <- lapply(PROGRAM_raw, pdf_text) #load all files
+length(PROGRAM_loaded) #verify how many files have been loaded
+lapply(PROGRAM_loaded, length) #check the length of each pdf file
+```
+
+```{r}
+PROGRAM.pdfdatabase <- Corpus(URISource(PROGRAM_raw),readerControl = list(reader = readPDF))
+```
+
+
+```{r}
+PROGRAM.pdfdatabase <- tm_map(PROGRAM.pdfdatabase, content_transformer(tolower))
+PROGRAM.pdfdatabase <- tm_map(PROGRAM.pdfdatabase, removePunctuation)
+PROGRAM.pdfdatabase <- tm_map(PROGRAM.pdfdatabase, removeNumbers)
+PROGRAM.pdfdatabase <- tm_map(PROGRAM.pdfdatabase, removeWords, stop_words$word)
+PROGRAM.pdfdatabase <- tm_map(PROGRAM.pdfdatabase, stripWhitespace)
+```
+
+
+
+## Document Term Matrix
+
+```{r}
+PROGRAM.dtm <-DocumentTermMatrix(PROGRAM.pdfdatabase,control = list(removePunctuation = T,
+                                                             tolower = T,
+                                                             stemming = F,
+                                                             removeNumbers = T,
+                                                             stripWhitespace = T,
+                                                             bounds = list(global=c(3,Inf)))) #%>% 
+  #removeSparseTerms(0.97)
+```
+
+```{r}
+samplePROGRAM.dtm <-DocumentTermMatrix(PROGRAM.pdfdatabase)
+```
+
+```{r}
+inspect(samplePROGRAM.dtm[1:10,])
+```
+
+
+```{r}
+inspect(PROGRAM.dtm[1:10,]) #Examine 10 words at a time across documents
+```
+
+
+
+```{r}
+inspect(PROGRAM.dtm[1:5, 1:5]) 
+```
+
+
+
+Frequent terms that appear at least 50 times across all documents
+
+```{r}
+findFreqTerms(PROGRAM.dtm, lowfreq = 50, highfreq = Inf) 
+```
+
+
+Sum the count of all frequently occurring words
+```{r}
+PROGRAM_ft.dtm <- as.matrix(PROGRAM.dtm[,ft])
+sort(apply(PROGRAM_ft.dtm, 1, sum), decreasing = TRUE)
+```
+ 
+
+Examine frequent Terms and their association. In this example we are looking at the frequent terms related to equilibrium. The correlation limit that is being examined is a correlation of 75% or greater. 
+
+```{r}
+findAssocs(PROGRAM.dtm, terms = "data", corlimit = 0.75)
+```
+
+
+```{r}
+P<- tidy(PROGRAM.dtm)
+```
+
+
+Create word cloud
+```{r}
+PROGRAM_tbl <- table(PROGRAM.dtm$term)
+wordcloud(names(PROGRAM_tbl), PROGRAM_tbl, min.freq=1,
+          max.words=200, random.order=FALSE, rot.per=0.35,
+          colors=brewer.pal(8, "Dark2"))
+```
+ 
+
+Create Bar chart 
+```{r}
+barplot(PROGRAM_dtm.d[1:11,]$freq, las = 2, names.arg = PROGRAM_dtm.d[1:11,]$word,
+        col ="lightblue", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+
+### Topic Modeling
+
+```{r}
+inspect(PROGRAM.dtm)
+```
+
+
+```{r}
+PROGRAM_lda <- LDA(PROGRAM.dtm, k = 10, control = list(alpha = 0.1))
+PROGRAM_lda
+```
+
+```{r}
+PROGRAM_topics <- tidy(PROGRAM_lda, matrix = "beta")
+PROGRAM_topics
+```
+
+
+```{r}
+PROGRAM_top_terms <- 
+  PROGRAM_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+PROGRAM_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+
+### Topic Modeling
+
+```{r}
+inspect(PROGRAM.tdm)
+```
+
+
+```{r}
+PROGRAM_lda <- LDA(PROGRAM.tdm[,1:10], k = 2, control = list(alpha = 0.1))
+PROGRAM_lda
+```
+
+```{r}
+PROGRAM_topics <- tidy(PROGRAM_lda, matrix = "beta")
+PROGRAM_topics
+```
+
+
+```{r}
+PROGRAM_top_terms <- 
+  PROGRAM_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+PROGRAM_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+
+```{r}
+library(quanteda)
+library(topicmodels)
+```
+
+corp = corpus_reshape()
+
+```{r}
+#corp = corpus_reshape(PROGRAM.pdfdatabase)
+#dfm = dfm(corp, remove_punct=T, remove=stopwords("english"))
+#dfm = dfm_trim(dfm, min_docfreq = 5)
+dtm = convert(PROGRAM.tdm, to = "topicmodels")
+
+set.seed(1)
+m = LDA(dtm, method = "Gibbs", k = 2, control = list(alpha = 0.1))
+```
+
+```{r}
+PROGRAM.tdm
+```
+
+```{r}
+PROGRAM.tdm_tidy <- removeSparseTerms(PROGRAM.tdm, 0.97)
+```
+
+```{r}
+PROGRAM.tdm_tidy
+```
+
+```{r}
+myDfm <- dfm(PROGRAM.pdfdatabase, verbose = F)
+```
+
+# Examining single courses
+ 
+## Economic Applications of Game Theory
+
+### Creating Corpus
+files <- list.files(path = .libPaths("Lecture_Notes/Economic Applications of Game Theory"), pattern = "pdf$")
+
+```{r}
+normalizePath("Lecture_Notes\\Economic_Applications_of_Game_Theory")
+```
+
+
+```{r}
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Economic_Applications_of_Game_Theory")
+GAME_raw <- list.files(path = "C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Economic_Applications_of_Game_Theory", pattern = ".pdf$") #create vector of pdf file names
+Encoding(GAME_raw) <- "UTF-8"
+iconv(GAME_raw, from = "UTF-8", to = "ASCII//TRANSLIT")
+GAME_loaded <- lapply(GAME_raw, pdf_text) #load all files
+length(GAME_loaded) #verify how many files have been loaded
+lapply(GAME_loaded, length) #check the length of each pdf file
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing")
+```
+
+
+
+```{r}
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Economic_Applications_of_Game_Theory")
+GAME.pdfdatabase <- Corpus(URISource(GAME_raw),readerControl = list(reader = readPDF))
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing")
+```
+## Document Term Matrix
+
+```{r}
+GAME.pdfdatabase <- tm_map(GAME.pdfdatabase, content_transformer(tolower))
+GAME.pdfdatabase <- tm_map(GAME.pdfdatabase, removePunctuation)
+GAME.pdfdatabase <- tm_map(GAME.pdfdatabase, removeNumbers)
+GAME.pdfdatabase <- tm_map(GAME.pdfdatabase, removeWords, stop_words$word)
+GAME.pdfdatabase <- tm_map(GAME.pdfdatabase, stripWhitespace)
+```
+
+```{r}
+GAME.dtm <-DocumentTermMatrix(GAME.pdfdatabase,control = list(removePunctuation = T,
+                                                             stopwords = T,
+                                                             tolower = T,
+                                                             stemming = F,
+                                                             removeNumbers = T,
+                                                             stripWhitespace = T,
+                                                             bounds = list(global=c(3,Inf)))) #%>% 
+  #removeSparseTerms(0.97)
+```
+
+```{r}
+sampleGAME.dtm <-DocumentTermMatrix(GAME.pdfdatabase)
+```
+
+```{r}
+inspect(sampleGAME.dtm[1:10,])
+```
+
+
+```{r}
+inspect(GAME.dtm[1:10,]) #Examine 10 words at a time across documents
+```
+
+Need to remove some more stopwords
+
+```{r}
+#GAME.dtm_tidy <- GAME.pdfdatabase %>%
+  #anti_join(stop_words, by = c("word" = "word"))
+```
+
+
+```{r}
+inspect(GAME.dtm[1:5, 1:5]) 
+```
+
+
+
+Frequent terms that appear at least 50 times across all documents
+
+```{r}
+findFreqTerms(GAME.dtm, lowfreq = 50, highfreq = Inf) 
+```
+
+
+Compare the distribution of frequently appearing words 
+```{r}
+#ft <- findFreqTerms(GAME.dtm, lowfreq = 1, highfreq = 5)
+#as.matrix(GAME.dtm[ft,]) 
+```
+
+Sum the count of all frequently occurring words
+```{r}
+GAME_ft.dtm <- as.matrix(GAME.dtm[ft,])
+sort(apply(GAME_ft.dtm, 1, sum), decreasing = TRUE)
+```
+ 
+
+Examine frequent Terms and their association. In this example we are looking at the frequent terms related to 'game'. The correlation limit that is being examined is a correlation of 75% or greater. 
+
+```{r}
+findAssocs(GAME.dtm, terms = "game", corlimit = 0.75)
+```
+
+
+Convert document term matrix to a data frame 
+
+```{r}
+GAME_dtm.m <- as.matrix(GAME.dtm)
+GAME_dtm.v <- sort(rowSums(GAME.m),decreasing=TRUE)
+GAME_dtm.d <- data.frame(word = names(GAME.v),freq=GAME.v)
+```
+
+```{r}
+GAME_df <- tidy(GAME.dtm)
+```
+
+
+Create word cloud
+```{r}
+set.seed(1234)
+wordcloud(words = GAME_df$term, freq = GAME_df$count, min.freq = 10,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+ 
+
+Create Bar chart 
+```{r}
+barplot(GAME_dtm.d[1:11,]$freq, las = 2, names.arg = GAME_dtm.d[1:11,]$word,
+        col ="lightblue", main ="Most frequent words",
+        ylab = "Word frequencies")
+```
+
+### Topic Modeling
+
+```{r}
+inspect(GAME.dtm)
+```
+
+
+```{r}
+GAME_lda <- LDA(GAME.dtm, k = 10, control = list(alpha = 0.1))
+GAME_lda
+```
+
+```{r}
+GAME_topics <- tidy(GAME_lda, matrix = "beta")
+GAME_topics
+```
+
+
+```{r}
+GAME_top_terms <- 
+  GAME_topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+GAME_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+## Introduction to Machine Learning
+
+MIT.desc_corp <- Corpus(VectorSource(MIT.desc_raw %>% removeWords(stop_words)))
+
+### Creating Corpus
+files <- list.files(path = .libPaths("Lecture_Notes/Economic Applications of Game Theory"), pattern = "pdf$")
+
+```{r}
+normalizePath("Lecture_Notes\\Introduction_to_Machine_Learning")
+```
+
+
+```{r}
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Introduction_to_Machine_Learning")
+ML_raw <- list.files(path = "C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Introduction_to_Machine_Learning", pattern = ".pdf$") #create vector of pdf file names
+Encoding(ML_raw) <- "UTF-8"
+iconv(ML_raw, from = "UTF-8", to = "ASCII//TRANSLIT")
+ML_loaded <- lapply(ML_raw, pdf_text) #load all files
+length(ML_loaded) #verify how many files have been loaded
+lapply(ML_loaded, length) #check the length of each pdf file
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing")
+```
+
+FPU.desc_corp <- Corpus(VectorSource(FPU.desc_raw %>% 
+                                       removeWords(stop_words$word)))
+
+```{r,warning=F}
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Introduction_to_Machine_Learning")
+ML_raw <- Corpus(VectorSource(ML_raw))
+ML.pdfdatabase <- Corpus(URISource(ML_raw),readerControl = list(reader = readPDF))
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing")
+```
+### Document Term Matrix
+
+```{r}
+ML.pdfdatabase <- tm_map(ML.pdfdatabase, content_transformer(tolower))
+ML.pdfdatabase <- tm_map(ML.pdfdatabase, removePunctuation)
+ML.pdfdatabase <- tm_map(ML.pdfdatabase, removeNumbers)
+ML.pdfdatabase <- tm_map(ML.pdfdatabase, removeWords, stop_words$word)
+ML.pdfdatabase <- tm_map(ML.pdfdatabase, stripWhitespace)
+```
+
+
+```{r}
+ML.dtm <-DocumentTermMatrix(ML.pdfdatabase,control = list(removePunctuation = T,
+                                                             #stopwords = T,
+                                                             tolower = T,
+                                                             stemming = F,
+                                                             removeNumbers = T,
+                                                             stripWhitespace = T,
+                                                             bounds = list(global=c(3,Inf)))) #%>% 
+  #removeSparseTerms(0.97)
+```
+
+```{r}
+sampleML.dtm <-DocumentTermMatrix(ML.pdfdatabase)
+```
+
+```{r}
+inspect(sampleML.dtm[1:10,])
+```
+
+
+```{r}
+inspect(ML.dtm[1:10,]) #Examine 10 words at a time across documents
+```
+
+Need to remove some more stopwords
+
+```{r}
+#GAME.dtm_tidy <- GAME.pdfdatabase %>%
+  #anti_join(stop_words, by = c("word" = "word"))
+```
+
+
+```{r}
+inspect(ML.dtm[1:5, 1:5]) 
+```
+
+
+
+Frequent terms that appear at least 50 times across all documents
+
+```{r}
+findFreqTerms(ML.dtm, lowfreq = 50, highfreq = Inf) 
+```
+
+ 
+
+Examine frequent Terms and their association. In this example we are looking at the frequent terms related to 'game'. The correlation limit that is being examined is a correlation of 75% or greater. 
+
+```{r}
+findAssocs(ML.dtm, terms = "data", corlimit = 0.75)
+```
+
+
+```{r}
+ML_df<- tidy(ML.dtm)
+```
+
+
+```{r}
+ML_df
+```
+
+
+
+Create word cloud
+```{r}
+set.seed(1234)
+wordcloud(words = ML_df$term, freq = ML_df$count, min.freq = 10,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+ 
+
+### Topic Modeling
+
+```{r}
+inspect(ML.dtm)
+```
+
+```{r}
+vocabulary <- ML.dtm$term[ ML.dtm$count > 1 & ML.dtm$count < nrow(ML.dtm) / 2 ]
+```
+
+```{r}
+ML_dgC <-  Matrix::sparseMatrix(i=ML.dtm$i, 
+                           j=ML.dtm$j, 
+                           x=ML.dtm$v, 
+                           dims=c(ML.dtm$nrow, ML.dtm$ncol),
+                           dimnames = ML.dtm$dimnames)
+```
+<https://towardsdatascience.com/beginners-guide-to-lda-topic-modelling-with-r-e57a5a8e7a25>
+
+### Model tuning
+```{r}
+k_list <- seq(1, 30, by = 1)
+model_dir <- paste0("models_", digest::digest(vocabulary, algo = "sha1"))
+if (!dir.exists(model_dir)) dir.create(model_dir)
+model_list <- TmParallelApply(X = k_list, FUN = function(k){
+  filename = file.path(model_dir, paste0(k, "_topics.rda"))
+  
+  if (!file.exists(filename)) {
+    m <- FitLdaModel(dtm = ML_dgC, k = k, iterations = 500)
+    m$k <- k
+    m$coherence <- CalcProbCoherence(phi = m$phi, dtm = ML_dgC, M = 5)
+    save(m, file = filename)
+  } else {
+    load(filename)
+  }
+  
+  m
+}, export=c("ML_dgC", "model_dir")) # export only needed for Windows machines
+#model tuning
+#choosing the best model
+coherence_mat <- data.frame(k = sapply(model_list, function(x) nrow(x$phi)), 
+                            coherence = sapply(model_list, function(x) mean(x$coherence)), 
+                            stringsAsFactors = FALSE)
+ggplot(coherence_mat, aes(x = k, y = coherence)) +
+  geom_point() +
+  geom_line(group = 1)+
+  ggtitle("Best Topic by Coherence Score for MIT Intro to Machine Learning") + theme_minimal() +
+  scale_x_continuous(breaks = seq(1,30,1)) + ylab("Coherence")
+```
+
+Selecting model k = 11
+```{r}
+model <- model_list[[ 11 ]]
+model$top_terms <- GetTopTerms(phi = model$phi, M = 5)
+top20_wide <- as.data.frame(model$top_terms)
+top20_wide
+``` 
+
+```{r}
+grid.table(top20_wide)
+```
+
+
+Cluster Dendrogram
+```{r}
+model$topic_linguistic_dist <- CalcHellingerDist(model$phi)
+model$hclust <- hclust(as.dist(model$topic_linguistic_dist), "ward.D")
+model$hclust$labels <- paste(model$hclust$labels, model$labels[ , 1])
+plot(model$hclust)
+```
+
+
+```{r}
+ML_lda <- LDA(FPU.desc_dtm, k = 11, control = list(alpha = 0.1))
+ML_lda
+```
+
+```{r}
+ML_topics <- tidy(ML_lda, matrix = "beta")
+ML_topics
+```
+
+
+```{r}
+ML_top_terms <- 
+  ML_topics %>%
+  group_by(topic) %>%
+  top_n(5, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+ML_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
+
+## Introduction to Computational Thinking and Data Science
+
+MIT.desc_corp <- Corpus(VectorSource(MIT.desc_raw %>% removeWords(stop_words)))
+
+### Creating Corpus
+files <- list.files(path = .libPaths("Lecture_Notes/Economic Applications of Game Theory"), pattern = "pdf$")
+
+```{r}
+normalizePath("Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science")
+```
+
+
+```{r}
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science")
+DATA_raw <- list.files(path = "C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Notes\\Introduction_to_Machine_Learning", pattern = ".pdf$") #create vector of pdf file names
+Encoding(DATA_raw) <- "UTF-8"
+iconv(DATA_raw, from = "UTF-8", to = "ASCII//TRANSLIT")
+DATA_loaded <- lapply(DATA_raw, pdf_text) #load all files
+length(DATA_loaded) #verify how many files have been loaded
+lapply(DATA_loaded, length) #check the length of each pdf file
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing")
+```
+
+FPU.desc_corp <- Corpus(VectorSource(FPU.desc_raw %>% 
+                                       removeWords(stop_words$word)))
+
+```{r,warning=F}
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing\\Lecture_Transcripts\\Introduction_to_Computational_Thinking_and_Data_Science")
+DATA_raw <- Corpus(VectorSource(DATA_raw))
+DATA.pdfdatabase <- Corpus(URISource(DATA_raw),readerControl = list(reader = readPDF))
+setwd("C:\\Users\\Gabriel.DESKTOP-TOT6KGP\\Desktop\\Masters_Project\\Data_Preprocessing\\mooc_preprocessing")
+```
+### Document Term Matrix
+
+```{r}
+DATA.pdfdatabase <- tm_map(DATA.pdfdatabase, content_transformer(tolower))
+DATA.pdfdatabase <- tm_map(DATA.pdfdatabase, removePunctuation)
+DATA.pdfdatabase <- tm_map(DATA.pdfdatabase, removeNumbers)
+DATA.pdfdatabase <- tm_map(DATA.pdfdatabase, removeWords, stop_words$word)
+DATA.pdfdatabase <- tm_map(DATA.pdfdatabase, stripWhitespace)
+```
+
+
+```{r}
+DATA.dtm <-DocumentTermMatrix(DATA.pdfdatabase,control = list(removePunctuation = T,
+                                                             #stopwords = T,
+                                                             tolower = T,
+                                                             stemming = F,
+                                                             removeNumbers = T,
+                                                             stripWhitespace = T,
+                                                             bounds = list(global=c(3,Inf)))) #%>% 
+  #removeSparseTerms(0.97)
+```
+
+```{r}
+sampleDATA.dtm <-DocumentTermMatrix(DATA.pdfdatabase)
+```
+
+```{r}
+inspect(sampleDATA.dtm[1:10,])
+```
+
+
+```{r}
+inspect(DATA.dtm[1:10,]) #Examine 10 words at a time across documents
+```
+
+Need to remove some more stopwords
+
+```{r}
+#GAME.dtm_tidy <- GAME.pdfdatabase %>%
+  #anti_join(stop_words, by = c("word" = "word"))
+```
+
+
+```{r}
+inspect(DATA.dtm[1:5, 1:5]) 
+```
+
+
+
+Frequent terms that appear at least 50 times across all documents
+
+```{r}
+findFreqTerms(DATA.dtm, lowfreq = 50, highfreq = Inf) 
+```
+
+ 
+
+Examine frequent Terms and their association. In this example we are looking at the frequent terms related to 'game'. The correlation limit that is being examined is a correlation of 75% or greater. 
+
+```{r}
+findAssocs(DATA.dtm, terms = "data", corlimit = 0.75)
+```
+
+
+```{r}
+DATA_df<- tidy(DATA.dtm)
+```
+
+
+```{r}
+DATA_df
+```
+
+
+
+Create word cloud
+```{r}
+set.seed(1234)
+wordcloud(words = DATA_df$term, freq = DATA_df$count, min.freq = 10,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+ 
+
+### Topic Modeling
+
+```{r}
+inspect(DATA.dtm)
+```
+
+```{r}
+vocabulary <- DATA.dtm$term[ DATA.dtm$count > 1 & DATA.dtm$count < nrow(DATA.dtm) / 2 ]
+```
+
+```{r}
+DATA_dgC <-  Matrix::sparseMatrix(i=DATA.dtm$i, 
+                           j=DATA.dtm$j, 
+                           x=DATA.dtm$v, 
+                           dims=c(DATA.dtm$nrow, DATA.dtm$ncol),
+                           dimnames = DATA.dtm$dimnames)
+```
+<https://towardsdatascience.com/beginners-guide-to-lda-topic-modelling-with-r-e57a5a8e7a25>
+
+### Model tuning
+```{r}
+k_list <- seq(1, 30, by = 1)
+model_dir <- paste0("models_", digest::digest(vocabulary, algo = "sha1"))
+if (!dir.exists(model_dir)) dir.create(model_dir)
+model_list <- TmParallelApply(X = k_list, FUN = function(k){
+  filename = file.path(model_dir, paste0(k, "_topics.rda"))
+  
+  if (!file.exists(filename)) {
+    m <- FitLdaModel(dtm = DATA_dgC, k = k, iterations = 500)
+    m$k <- k
+    m$coherence <- CalcProbCoherence(phi = m$phi, dtm = DATA_dgC, M = 5)
+    save(m, file = filename)
+  } else {
+    load(filename)
+  }
+  
+  m
+}, export=c("DATA_dgC", "model_dir")) # export only needed for Windows machines
+#model tuning
+#choosing the best model
+coherence_mat <- data.frame(k = sapply(model_list, function(x) nrow(x$phi)), 
+                            coherence = sapply(model_list, function(x) mean(x$coherence)), 
+                            stringsAsFactors = FALSE)
+ggplot(coherence_mat, aes(x = k, y = coherence)) +
+  geom_point() +
+  geom_line(group = 1)+
+  ggtitle("Topic Amount for MIT Intro to Computational Thinking and Data Science") + theme_minimal() +
+  scale_x_continuous(breaks = seq(1,30,1)) + ylab("Coherence")
+```
+
+Selecting model k = 13
+```{r}
+model <- model_list[[ 13 ]]
+model$top_terms <- GetTopTerms(phi = model$phi, M = 6)
+top20_wide <- as.data.frame(model$top_terms)
+top20_wide
+``` 
+
+```{r}
+grid.table(top20_wide)
+```
+
+
+Cluster Dendrogram
+```{r}
+model$topic_linguistic_dist <- CalcHellingerDist(model$phi)
+model$hclust <- hclust(as.dist(model$topic_linguistic_dist), "ward.D")
+model$hclust$labels <- paste(model$hclust$labels, model$labels[ , 1])
+plot(model$hclust)
+```
+
+
+```{r}
+DATA_lda <- LDA(DATA.dtm, k = 13, control = list(alpha = 0.1))
+DATA_lda
+```
+
+```{r}
+DATA_topics <- tidy(DATA_lda, matrix = "beta")
+DATA_topics
+```
+
+
+```{r}
+DATA_top_terms <- 
+  DATA_topics %>%
+  group_by(topic) %>%
+  top_n(5, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+```
+
+
+```{r}
+DATA_top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  ggplot(aes(term, beta, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  coord_flip()
+```
